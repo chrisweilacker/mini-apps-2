@@ -15,8 +15,20 @@ class App extends Component {
     }
 
     handlePageChange(pageNumber) {
-        console.log(`active page is ${pageNumber}`);
-        this.setState({activePage: pageNumber});
+        console.log(pageNumber);
+        Axios.get(`http://localhost:3000/events?_page=${(pageNumber.selected+1)}&q=${this.state.search}`)
+        .then((response) => {
+            let pages = Math.ceil(Number(response.headers['x-total-count'])/10);
+            this.setState((prevState)=>{
+                return {
+                    data: response.data,
+                    activePage: (pageNumber.selected+1),
+                    pages: pages,
+                    search: prevState.search
+                }
+            });
+            
+        });
       }
 
     search(e) {
@@ -28,25 +40,29 @@ class App extends Component {
                 return {
                     data: response.data,
                     activePage: 1,
-                    pages: pages
+                    pages: pages,
+                    search: search
                 }
-            })
-            console.log(this.state)
-        })
+            });
+            
+        });
         
     }
 
     render() {
         return(
-        <div>
-            <div>
+        <div className="container">
+            <div className="row">
+                <h1>Historical Event Finder</h1>
+                <h3>Search for a Historical Event...</h3>
                 <div class="form-group">
-                <label for="Search">Search:</label>
-                <input id="search" type="text"></input>
+                <label for="Search">Search: </label>
+                <input id="search" type="text" className="form-control"></input>
+                
                 </div>
-                <button className="btn btn-default" onClick={this.search.bind(this)}>Search</button>
+                <button className="btn btn-primary" onClick={this.search.bind(this)}>Search</button>
             </div>
-            <div>
+            <div style={{marginTop: '15px'}} className="row">
                 <table className="table table-striped table-condensed">
                 <thead>
                     <tr>
@@ -81,7 +97,7 @@ class App extends Component {
                 pageCount={this.state.pages}
                 marginPagesDisplayed={2}
                 pageRangeDisplayed={5}
-                onPageChange={this.handlePageClick}
+                onPageChange={this.handlePageChange.bind(this)}
                 containerClassName={'pagination'}
                 subContainerClassName={'pages pagination'}
                 activeClassName={'active'}
